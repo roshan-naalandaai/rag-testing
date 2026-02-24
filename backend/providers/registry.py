@@ -15,7 +15,7 @@ _REGISTRY: dict[str, type[LLMProvider]] = {
 }
 
 
-def get_provider(name: str) -> LLMProvider:
+def get_provider(name: str, model: str | None = None) -> LLMProvider:
     if name not in _REGISTRY:
         raise ValueError(f"Unknown provider: '{name}'. Available: {list(_REGISTRY)}")
-    return _REGISTRY[name]()
+    return _REGISTRY[name](model=model)

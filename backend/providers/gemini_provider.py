@@ -1,19 +1,22 @@
-import json
 import os
+
 import google.generativeai as genai
-from .base import LLMProvider
+
+from constants.app_constants import GEMINI_MODEL
+from providers.base import LLMProvider
 
 
 class GeminiProvider(LLMProvider):
     supports_tool_calling = True
     supports_json_mode = True
 
-    def __init__(self):
+    def __init__(self, model: str | None = None):
         genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+        self.model = model or GEMINI_MODEL
 
     async def generate(self, system_prompt: str, user_prompt: str) -> str:
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name=self.model,
             system_instruction=system_prompt,
         )
         response = await model.generate_content_async(user_prompt)
@@ -42,7 +45,7 @@ class GeminiProvider(LLMProvider):
             },
         }
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name=self.model,
             system_instruction=system_prompt,
             tools=[{"function_declarations": [function_declaration]}],
             tool_config={"function_calling_config": {"mode": "ANY"}},
@@ -58,7 +61,7 @@ class GeminiProvider(LLMProvider):
         self, system_prompt: str, user_prompt: str
     ) -> str:
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name=self.model,
             system_instruction=system_prompt,
             generation_config=genai.GenerationConfig(
                 response_mime_type="application/json"

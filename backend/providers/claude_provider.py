@@ -1,24 +1,26 @@
 import json
 import os
+
 from anthropic import AsyncAnthropic
-from .base import LLMProvider
+
+from constants.app_constants import CLAUDE_MAX_TOKENS, CLAUDE_MODEL
+from providers.base import LLMProvider
 
 
 class ClaudeProvider(LLMProvider):
     supports_tool_calling = True
     supports_json_mode = True
 
-    def __init__(self):
+    def __init__(self, model: str | None = None):
         self.client = AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        self.model = model or CLAUDE_MODEL
 
     async def generate(self, system_prompt: str, user_prompt: str) -> str:
         response = await self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=8096,
+            model=self.model,
+            max_tokens=CLAUDE_MAX_TOKENS,
             system=system_prompt,
-            messages=[
-                {"role": "user", "content": user_prompt},
-            ],
+            messages=[{"role": "user", "content": user_prompt}],
         )
         return response.content[0].text
 
@@ -26,8 +28,8 @@ class ClaudeProvider(LLMProvider):
         self, system_prompt: str, user_prompt: str, tool_schema: dict
     ) -> str:
         response = await self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=8096,
+            model=self.model,
+            max_tokens=CLAUDE_MAX_TOKENS,
             system=system_prompt,
             tools=[{
                 "name": tool_schema["name"],
@@ -35,9 +37,7 @@ class ClaudeProvider(LLMProvider):
                 "input_schema": tool_schema["parameters"],
             }],
             tool_choice={"type": "tool", "name": tool_schema["name"]},
-            messages=[
-                {"role": "user", "content": user_prompt},
-            ],
+            messages=[{"role": "user", "content": user_prompt}],
         )
         for block in response.content:
             if block.type == "tool_use":
@@ -48,10 +48,9 @@ class ClaudeProvider(LLMProvider):
         self, system_prompt: str, user_prompt: str
     ) -> str:
         # Response prefilling: seed the assistant turn with "{" to force raw JSON
-        # output from the first character, bypassing markdown wrapping.
         response = await self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=8096,
+            model=self.model,
+            max_tokens=CLAUDE_MAX_TOKENS,
             system=system_prompt,
             messages=[
                 {"role": "user", "content": user_prompt},

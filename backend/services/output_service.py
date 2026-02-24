@@ -12,14 +12,16 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+from constants.app_constants import COMPILER_TIMEOUT_SECONDS
+
 BACKEND_DIR = Path(__file__).parent.parent
 OUTPUTS_DIR = BACKEND_DIR / "outputs"
 UNCOMPILED_DIR = OUTPUTS_DIR / "uncompiled"
 COMPILED_DIR = OUTPUTS_DIR / "compiled"
 
-# Path to the TypeScript compiler entry point
 COMPILER_SCRIPT = BACKEND_DIR.parent / "compiler" / "compile-demo.ts"
 COMPILER_DIR = COMPILER_SCRIPT.parent
+
 logger = logging.getLogger("backend")
 
 
@@ -52,13 +54,13 @@ def _run_compiler_sync(input_path: Path, output_path: Path) -> tuple[bool, str]:
             cwd=str(COMPILER_DIR),
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=COMPILER_TIMEOUT_SECONDS,
         )
         if proc.returncode != 0:
             return False, (proc.stderr or proc.stdout).strip()
         return True, ""
     except subprocess.TimeoutExpired:
-        return False, "Compiler timed out after 60 seconds"
+        return False, f"Compiler timed out after {COMPILER_TIMEOUT_SECONDS} seconds"
     except Exception as exc:
         return False, str(exc)
 
@@ -97,7 +99,6 @@ def list_outputs() -> list[dict]:
         output_id = unc_file.stem
         compiled_file = COMPILED_DIR / f"{output_id}_compiled.json"
 
-        # Parse timestamp and topic from the ID (YYYYMMDD_HHMMSS_topic_slug)
         parts = output_id.split("_", 2)
         try:
             ts = datetime.strptime(f"{parts[0]}_{parts[1]}", "%Y%m%d_%H%M%S")
@@ -107,14 +108,12 @@ def list_outputs() -> list[dict]:
 
         topic_slug = parts[2].replace("_", " ") if len(parts) > 2 else output_id
 
-        results.append(
-            {
-                "id": output_id,
-                "topic": topic_slug,
-                "created_at": created_at,
-                "has_compiled": compiled_file.exists(),
-            }
-        )
+        results.append({
+            "id": output_id,
+            "topic": topic_slug,
+            "created_at": created_at,
+            "has_compiled": compiled_file.exists(),
+        })
     return results
 
 

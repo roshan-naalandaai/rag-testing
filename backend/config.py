@@ -1,12 +1,14 @@
-from pydantic import BaseSettings
+import os
 
-class Settings(BaseSettings):
-    """Configuration settings for the application."""
-    # TODO: Add configuration variables
-    app_name: str = "FastAPI Backend"
-    debug: bool = False
 
-    class Config:
-        env_file = ".env"
+class Settings:
+    """
+    Application settings read from environment variables.
+    All keys are sourced from .env (loaded by app.py via python-dotenv).
+    """
+    app_name: str = "Naalanda Backend"
+    debug: bool = os.getenv("DEBUG", "").lower() in {"1", "true", "yes"}
+    log_verbose: bool = os.getenv("LOG_VERBOSE", "").lower() in {"1", "true", "yes"}
+
 
 settings = Settings()

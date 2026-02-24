@@ -159,7 +159,7 @@ class Scene(BaseModel):
     startTime: StrictFloat = Field(..., ge=0)
     duration: StrictFloat = Field(..., gt=0)
     background: StrictStr
-    audio: AudioRef
+    audio: Optional[AudioRef] = None
     elements: List[Element]
 
     @model_validator(mode="after")
