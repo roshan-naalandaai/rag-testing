@@ -69,7 +69,7 @@ for (const scene of project.scenes) {
     if (action.type === 'audio') {
       console.log(`      - audio: ${action.assetId}`);
     } else if (action.type === 'svgAnimation') {
-      console.log(`      - svg: ${action.assetId} at (${action.x}, ${action.y}) scale=${action.scale.toFixed(2)}`);
+      console.log(`      - svg: ${action.assetId} at (${action.x}, ${action.y}) size=${action.width}x${action.height}`);
     } else if (action.type === 'text') {
       console.log(`      - text: "${action.text}" at (${action.x}, ${action.y})`);
     } else if (action.type === 'shape') {

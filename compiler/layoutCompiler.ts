@@ -61,7 +61,9 @@ interface SvgAnimationAction extends ActionBase {
   assetId: string;
   x: number;
   y: number;
-  scale: number;
+  width: number;
+  height: number;
+  startTime: number;
   duration: number;
 }
 
@@ -325,13 +327,15 @@ export class LayoutCompiler {
       dimensions.height
     );
 
+    const scale = layoutResult.scale || 1;
     return {
       type: 'svgAnimation',
       id: this.generateId(element.assetId),
       assetId: element.assetId,
       x: Math.round(layoutResult.x),
       y: Math.round(layoutResult.y),
-      scale: layoutResult.scale || 1,
+      width: Math.round(dimensions.width * scale),
+      height: Math.round(dimensions.height * scale),
       startTime: sceneStartTime + element.startTime,
       duration: element.duration,
     };
@@ -352,7 +356,7 @@ export class LayoutCompiler {
       type: 'text',
       id: this.generateId('text'),
       text: element.text,
-      x: Math.round(layoutResult.x),
+      x: Math.max(0, Math.round(layoutResult.x)),
       y: Math.round(layoutResult.y),
       fontSize,
       fontFamily,
@@ -534,7 +538,7 @@ export class LayoutCompiler {
           type: 'text',
           id: this.generateId('text'),
           text: item.text,
-          x: Math.round(layoutResult.x),
+          x: Math.max(0, Math.round(layoutResult.x)),
           y: Math.round(layoutResult.y),
           fontSize: item.fontSize || DEFAULTS.fontSize,
           fontFamily: item.fontFamily || DEFAULTS.fontFamily,
